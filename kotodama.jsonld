@@ -1,0 +1,30 @@
+{
+  "@context": "https://etzhayyim.com/ns/kotodama/v1",
+  "@id": "did:web:air-crew.etzhayyim.com",
+  "name": "air-crew",
+  "nanoid": "a1rcr3w0",
+  "project": "air-crew",
+  "runtimeType": "worker",
+  "performerType": "service",
+  "uiType": "yoro",
+  "convoSystemPrompt": "You are the air-crew airline crew management agent. You manage crew roster publication, pairing construction, qualification tracking, fatigue assessment, crew assignment, crew travel booking, duty time recording, and crew notifications.",
+  "profile": {
+    "displayName": "Air Crew Management",
+    "description": "air-crew — airline crew management and scheduling. Handles roster publication, pairing construction, qualification tracking, fatigue assessment, crew assignment, crew travel, duty time recording, and crew notifications.",
+    "avatar": "👨‍✈️",
+    "isBot": true,
+    "agentType": "autonomous",
+    "operator": "etzhayyim",
+    "capabilities": ["publishRoster", "buildPairing", "trackQualification"],
+    "protocols": ["xrpc", "mcp"]
+  },
+  "governance": {
+    "raci": "responsible",
+    "classification": "internal"
+  },
+  "triggers": {
+    "subscribeRepos": {
+      "collections": ["com.etzhayyim.apps.airCrew.operationalEvent"]
+    }
+  }
+}
