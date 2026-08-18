@@ -1,0 +1,26 @@
+;; The air-crew appview Worker. :esm, mirroring cloud-itonami-marketplace-listing
+;; and app-ongakuka.
+;;
+;; wrangler.jsonc's main points at dist/worker.js, which is THIS bundle compiled
+;; from the source in src/. That is the whole point of the migration recorded in
+;; docs/adr/0001: before it, main pointed at a SvelteKit build output that is not
+;; in the tree, and the TypeScript a reader opened was in no bundle at all.
+;;
+;; :warnings-as-errors lives inside :compiler-options ON PURPOSE. shadow-cljs
+;; treats an undeclared or renamed var as a WARNING and still exits 0, shipping a
+;; bundle that throws on its first request -- a green build is not a check.
+;; Putting the key under :build-options instead is worse than not having it:
+;; shadow ignores it there silently, so the safeguard reads as present while
+;; being inert. That misplacement is itself a check that cannot fail, which is
+;; the class of defect this repo's gates exist to catch. scripts/verify-docs-claims.cljs
+;; PARSES this file as EDN and asserts the key's position -- it does not grep,
+;; because this very comment contains the string.
+{:deps {:aliases [:cljs]}
+ :builds
+ {:worker
+  {:target :esm
+   :output-dir "dist"
+   :modules {:worker {:exports {default air-crew.worker/handler}}}
+   :compiler-options {:output-feature-set :es2020
+                      :infer-externs :auto
+                      :warnings-as-errors true}}}}
