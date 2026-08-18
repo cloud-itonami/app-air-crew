@@ -1,16 +1,16 @@
 {
+  // main points at the shadow-cljs :esm bundle built from src/air_crew/.
+  // Before the migration recorded in docs/adr/0001 it pointed at
+  // "svelte/.svelte-kit/cloudflare/_worker.js" -- a SvelteKit build output that
+  // is not in this tree and that no file here can produce any more.
   "name": "kotodama-a1rcr3w0",
-  "main": "svelte/.svelte-kit/cloudflare/_worker.js",
+  "main": "dist/worker.js",
   "compatibility_date": "2025-03-17",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "nodejs_als"
-  ],
   "vars": {
     "APP_CAPABILITIES": "[\"publishRoster\",\"buildPairing\",\"trackQualification\"]",
     "APP_DESCRIPTION": "air-crew — airline crew management and scheduling. Handles roster publication, pairing construction, qualification tracking, fatigue assessment, crew assignment, crew travel, duty time recording, and crew notifications.",
     "APP_DISPLAY_NAME": "Air Crew Management",
-    "APP_FRAMEWORK": "sveltekit-edge-bff",
+    "APP_FRAMEWORK": "cljs-esm-worker",
     "APP_NANOID": "a1rcr3w0",
     "APP_PERFORMER_TYPE": "service",
     "APP_UI_TYPE": "yoro",
@@ -33,11 +33,5 @@
       "pattern": "air-crew.etzhayyim.com/*",
       "zone_name": "etzhayyim.com"
     }
-  ],
-  "assets": {
-    "directory": "./svelte/.svelte-kit/cloudflare/client",
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "none"
-  }
+  ]
 }
