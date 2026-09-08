@@ -10,7 +10,7 @@
   pending —— ADR-2606290000）に最初に `.kotoba` へ移るのもここである。
   route 表はスカラと文字列に対する判断であり、それはその移行を生き延びる形
   そのものだからである。"
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def routes
   "公開面をデータとして持つ。**説明ページはこれを描く。**
@@ -52,7 +52,7 @@
   `:page` / `:health` / `:xrpc` / `:cors-preflight` / `:not-found` /
   `:method-not-allowed` / `:bad-request` のいずれか。"
   [method path]
-  (let [m (keyword (str/lower-case (or method "get")))
+  (let [m (keyword (str/lower (or method "get")))
         p (or path "")]
     (cond
       (and (= m :options) (str/starts-with? p "/xrpc/"))
@@ -106,7 +106,7 @@
   ものを `cljs-worker` に変えている —— 名乗りが実態と食い違わないようにする
   ためで、上流はこの値で分岐しない。"
   [incoming nsid]
-  (-> (into {} (remove (fn [[k _]] (contains? hop-by-hop (str/lower-case (name k)))))
+  (-> (into {} (remove (fn [[k _]] (contains? hop-by-hop (str/lower (name k)))))
             incoming)
       (assoc "content-type" "application/json"
              "x-etzhayyim-bff" "cljs-worker"

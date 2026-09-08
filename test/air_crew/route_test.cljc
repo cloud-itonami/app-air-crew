@@ -1,6 +1,6 @@
 (ns air-crew.route-test
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [air-crew.route :as route]
             [air-crew.view :as view]))
 
