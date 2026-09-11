@@ -34,7 +34,7 @@ K=~/github/com-junkawasaki/orgs/kotoba-lang
 ## §1 Check that the documents are telling the truth
 
 ```bash
-cd "$REPO" && npx --yes nbb scripts/verify-docs-claims.cljs .
+cd "$REPO" && npx --yes kbb --backend sci scripts/verify-docs-claims.cljk .
 ```
 
 ```
@@ -104,7 +104,7 @@ cat > /tmp/run.cljs <<'EOF'
 (require '[cljs.test :refer [run-tests]] 'air-crew.route-test)
 (run-tests 'air-crew.route-test)
 EOF
-npx --yes nbb --classpath "$CP" /tmp/run.cljs
+npx --yes kbb --backend sci --classpath "$CP" /tmp/run.cljs
 ```
 
 ```
@@ -148,9 +148,9 @@ cat > /tmp/render.cljs <<'EOF'
                   :mcp-url "https://mcp.etzhayyim.com/xrpc/com.etzhayyim.mcp.message"}))
   (println "ok"))
 EOF
-DDS="$K/jp-go-digital-design-system" npx --yes nbb --classpath "$CP" /tmp/render.cljs
+DDS="$K/jp-go-digital-design-system" npx --yes kbb --backend sci --classpath "$CP" /tmp/render.cljs
 
-cd "$K/design-quality" && npx --yes nbb -m design-quality.cli score /tmp/ac-page.html --min 95
+cd "$K/design-quality" && npx --yes kbb --backend sci -m design-quality.cli score /tmp/ac-page.html --min 95
 ```
 
 ```
@@ -210,7 +210,7 @@ heavy builds, and `exit 2` means *someone else holds the lock*, not *failure*:
 cd "$REPO"
 for i in $(seq 1 60); do
   node ~/github/com-junkawasaki/scripts/resource-guard.mjs run build -- \
-    npx --yes shadow-cljs release worker > /tmp/b.log 2>&1
+    npx --yes amu compile --target wasm32-browser worker > /tmp/b.log 2>&1
   rc=$?
   [ $rc -eq 0 ] && { echo "BUILD OK"; tail -1 /tmp/b.log; break; }
   [ $rc -ne 2 ] && { echo "BUILD FAILED rc=$rc"; tail -20 /tmp/b.log; break; }
@@ -285,7 +285,7 @@ is NXDOMAIN and that is not hidden behind a 200.
 The only check that touches the artifact that would actually be deployed.
 
 ```bash
-cd "$REPO" && npx --yes nbb scripts/smoke-worker.cljs dist/worker.js
+cd "$REPO" && npx --yes kbb --backend sci scripts/smoke-worker.cljk dist/worker.js
 ```
 
 ```

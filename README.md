@@ -243,7 +243,7 @@ nothing" and "leak everything" pass.
 ## Verification
 
 ```bash
-npx --yes nbb scripts/verify-docs-claims.cljs .    # <dir> FIRST
+npx --yes kbb --backend sci scripts/verify-docs-claims.cljk .    # <dir> FIRST
 ```
 
 exit 0 = every claim holds / 1 = a claim is false / **2 = could not answer**
