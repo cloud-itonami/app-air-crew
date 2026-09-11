@@ -149,7 +149,7 @@ XRPC の中継先 URL は意図的に描いている —— どこへ要求が�
 
 - `air-crew.route-test`: **8 tests / 39 assertions、0 failures**（nbb、ビルド不要）
 - ページ描画 → design-quality score **100.00 / 100**（gate 95）PASS
-- `shadow-cljs release worker`: **55 files / 12 compiled / 0 warnings / 54.40s**、
+- `amu compile --target wasm32-browser worker`: **55 files / 12 compiled / 0 warnings / 54.40s**、
   `dist/worker.js` 247,921 bytes
 - `scripts/smoke-worker.cljs` が **built bundle を import して 21 項目** PASS
 - **workerd（`wrangler dev --local`）で全 route を実際に叩いた** ——
