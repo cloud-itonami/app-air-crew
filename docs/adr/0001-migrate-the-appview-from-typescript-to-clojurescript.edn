@@ -32,7 +32,7 @@
    ディレクトリの `wrangler.jsonc` は **route 2 / var 8** を宣言していた。
    ページは生成器の出力で、隣の設定を一度も読んでいない。
 
-この workspace の正本言語は cljs と kotoba である（superproject CLAUDE.md の
+この workspace の正本言語は cljs と kotoba である（superproject AGENTS.md の
 runtime 順序: kotoba wasm > clojurewasm > ClojureScript > nbb）。TypeScript は
 そこに無い。
 
