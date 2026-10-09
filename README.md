@@ -242,6 +242,8 @@ nothing" and "leak everything" pass.
 
 ## Static edition (IPFS)
 
+Published name: `ipns://k51qzi5uqu5dhpturft17i8dddr99ngimdxwjjcw04gdcxq5fmugmohf8wpugo` (recorded with the site CID in `kotoba.app.edn`). Public HTTPS entrance: `https://k51qzi5uqu5dhpturft17i8dddr99ngimdxwjjcw04gdcxq5fmugmohf8wpugo.ipns.220-146-170-114.sslip.io/`.
+
 Besides the Worker, the landing page can be rendered as a **static edition**:
 content-addressed on IPFS, canonical at its `ipns://` name (also readable on
 the `{k51…}.ipns` gateway origin), with DNS names as aliases only. The Worker
