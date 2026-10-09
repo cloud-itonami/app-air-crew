@@ -1,0 +1,51 @@
+#!/usr/bin/env kbb
+;; render-static — 説明ページの静的版を描いて dist/static/index.html に書く。
+;;
+;; 静的版は IPFS に content-addressed で置く版で、Worker を持たない
+;; （ipns:// の名前が正準のアドレスで、DNS 名はその別名）。Worker 版は並行して
+;; deploy されたままであり、この script はそれに触らない。
+;;
+;; 出力は決定論的でなければならない —— 同じ tree から同じ CID が出なければ、
+;; content-addressed に置く意味が無い。だから時刻もホスト名も env も読まない。
+;; 読むのは tree（src/ と DADS の CSS）だけである。
+;;
+;; Usage:  DDS=<jp-go-digital-design-system> \
+;;         kbb --backend sci --classpath "src:$DDS/src:$K/html/src:$K/css/src" \
+;;           scripts/render-static.kotoba [<out>]          （既定 dist/static/index.html）
+;; Exit:   0 書いた · 2 書けなかった（CSS が無い等。半端な成果物は残さない）
+
+(require '["node:fs" :as fs] '["node:path" :as path]
+         '[nbb.core :refer [load-file await]]
+         '[kotoba.lang.text :as str])
+
+;; src/ は `.kotoba` だが、kbb の sci door（org-babashka-nbb）の名前空間解決は
+;; `.cljk` / `.cljs` / `.cljc` しか探さない（実測: `require` は
+;; 『Could not find namespace』で落ちる）。依存順に load-file すれば、後続の
+;; `require` は読み込み済みの名前空間を見つける。
+(await (load-file "src/air_crew/route.kotoba"))
+(await (load-file "src/air_crew/view.kotoba"))
+(require '[air-crew.route :as route] '[air-crew.view :as view])
+
+(def out
+  (or (first (remove #(str/starts-with? % "--") *command-line-args*))
+      "dist/static/index.html"))
+
+(def css-path
+  "Worker が `shadow.resource/inline` で焼くのと同じ resource
+  （jp_go_dds/dds.css）。静的版だけ別の CSS を持つと、2 つの版の見た目が
+  黙ってずれる。"
+  (str (or (.-DDS js/process.env)
+           (str (.-HOME js/process.env)
+                "/github/com-junkawasaki/orgs/kotoba-lang/jp-go-digital-design-system"))
+       "/resources/jp_go_dds/dds.css"))
+
+(when-not (.existsSync fs css-path)
+  (println (str "UNDETERMINED\tno DADS CSS at " css-path " (set DDS)"))
+  (js/process.exit 2))
+
+(let [html (view/render {:css (.readFileSync fs css-path "utf8")
+                         :routes route/routes
+                         :static? true})]
+  (.mkdirSync fs (.dirname path out) #js {:recursive true})
+  (.writeFileSync fs out html)
+  (println (str "WROTE\t" out "\t" (.-length html) " chars")))

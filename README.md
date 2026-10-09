@@ -240,6 +240,33 @@ should be readable. The smoke checks this with **two independent sentinels**:
 one value that must not appear, one that must. One alone would let both "render
 nothing" and "leak everything" pass.
 
+## Static edition (IPFS)
+
+Published name: `ipns://k51qzi5uqu5dhpturft17i8dddr99ngimdxwjjcw04gdcxq5fmugmohf8wpugo` (recorded with the site CID in `kotoba.app.edn`). Public HTTPS entrance: `https://k51qzi5uqu5dhpturft17i8dddr99ngimdxwjjcw04gdcxq5fmugmohf8wpugo.ipns.220-146-170-114.sslip.io/`.
+
+Besides the Worker, the landing page can be rendered as a **static edition**:
+content-addressed on IPFS, canonical at its `ipns://` name (also readable on
+the `{k51…}.ipns` gateway origin), with DNS names as aliases only. The Worker
+stays deployed in parallel and its output does not change by a byte (without
+`:static?` the view renders exactly as before).
+
+The static edition has no Worker behind it, so it does **not** show `/health`,
+`/xrpc/:nsid`, the relay target or any env key. The route table lists only
+`:route/kind :page` routes, and the page says (in Japanese, like the rest of
+it) that the XRPC relay exists only on the Worker edition. The test
+`static-edition-advertises-only-what-exists` hands both renders the same opts
+and asserts absence in one and presence in the other.
+
+```bash
+K=~/github/com-junkawasaki/orgs/kotoba-lang
+DDS=$K/jp-go-digital-design-system \
+  kbb --backend sci --classpath "src:$K/jp-go-digital-design-system/src:$K/html/src:$K/css/src" \
+  scripts/render-static.kotoba          # → dist/static/index.html (git-ignored)
+```
+
+The output is deterministic (no clock, no env): render twice and compare
+sha256 before publishing.
+
 ## Verification
 
 ```bash
@@ -273,9 +300,10 @@ unusually clear, and the migration did not change it:
 src/air_crew/route.cljc        routing, header forwarding, envelope, unwrap
 src/air_crew/view.cljc         the page (jp-go-dds)
 src/air_crew/worker.cljs       Request/Response — the only layer that touches them
-test/air_crew/route_test.cljc  8 tests / 37 assertions
+test/air_crew/route_test.cljc  9 tests / 55 assertions
 scripts/smoke-worker.cljs      exercises the BUILT bundle (exit 2 if absent)
 scripts/verify-docs-claims.cljs re-derives every number in these docs
+scripts/render-static.kotoba   the static (IPFS) edition → dist/static/index.html
 deps.edn  shadow-cljs.edn      build
 wrangler.jsonc                 routes and vars; main → dist/worker.js
 kotoba/src/registry.ts         24 functions, plaintext/E2E split   ← kept, see above

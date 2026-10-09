@@ -39,7 +39,7 @@ cd "$REPO" && npx --yes kbb --backend sci scripts/verify-docs-claims.cljk .
 
 ```
 SCANNED	25
-PASS	tracked-files	expected=25	actual=25
+PASS	tracked-files	expected=27	actual=27
 PASS	inherited-bytes	expected=51772	actual=51772
 PASS	preserved-files-unchanged	expected=[]	actual=[]
 PASS	removed-by-migration-absent	expected=[]	actual=[]
@@ -110,7 +110,7 @@ npx --yes kbb --backend sci --classpath "$CP" /tmp/run.cljs
 ```
 Testing air-crew.route-test
 
-Ran 8 tests containing 39 assertions.
+Ran 9 tests containing 55 assertions.
 0 failures, 0 errors.
 ```
 

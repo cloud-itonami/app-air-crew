@@ -96,3 +96,29 @@
       (is (nil? (re-find #"#[0-9a-fA-F]{3,8}\b" view/app-css)))
       (is (nil? (re-find #"\b(rgba?|hsla?|color-mix)\s*\(" view/app-css)))
       (is (nil? (re-find #"font-size:\s*\d+px" view/app-css))))))
+
+(deftest static-edition-advertises-only-what-exists
+  ;; 静的版（IPFS）には Worker が居ない。`/health` も `/xrpc/:nsid` も中継先も
+  ;; env も存在しないので、ページに出てはならない。opts に**わざと渡して**から
+  ;; 不在を見る —— 渡さずに不在を見る検査は、静的版が何を無視しても落ちない。
+  ;; 対になる Worker 版の検査（同じ opts で全部出る）が、印が描画経路に載る
+  ;; ことを保証する。
+  (let [opts {:css "/*x*/" :routes route/routes
+              :vars [:APP_NANOID :AGENTGATEWAY_MCP_ROUTER_URL]
+              :mcp-url (route/mcp-router-url {})
+              :built-at "BUILT-AT-SENTINEL"}
+        static (view/render (assoc opts :static? true))
+        worker (view/render opts)
+        absent ["/xrpc" "/health" "mcp.etzhayyim.com"
+                "APP_NANOID" "AGENTGATEWAY_MCP_ROUTER_URL" "BUILT-AT-SENTINEL"]]
+    (testing "静的版は存在しないものを広告しない（時刻も焼かない）"
+      (doseq [s absent]
+        (is (not (str/includes? static s)) (str s " が静的版に出ている"))))
+    (testing "静的版はページ route と、自分が何であるかを出す"
+      (is (str/includes? static "<td"))
+      (is (str/includes? static "ipns://"))
+      (is (str/includes? static "Worker 版にしか無い")))
+    (testing "Worker 版は同じ opts で全部出す（印が描画経路に載っている）"
+      (doseq [s (cons "/xrpc/:nsid" (rest absent))]
+        (is (str/includes? worker s) (str s " が Worker 版に出ていない")))
+      (is (not (str/includes? worker "ipns://"))))))
