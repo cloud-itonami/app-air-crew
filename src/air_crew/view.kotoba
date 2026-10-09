@@ -39,6 +39,38 @@
            (:route/doc r)])
         routes))
 
+(defn- about-section
+  "冒頭の説明。Worker 版と静的版で同じ文言を共有する —— 2 つの版が別々の
+  説明を持つと、片方だけ直されて食い違う。"
+  []
+  (dds/section
+   {}
+   (dds/heading 1 "Air Crew Management")
+   [:p {:class "ac-lede"}
+    "航空機の乗務員運用（roster / pairing / 資格 / 疲労 / 割当 / 移動 / "
+    "勤務時間 / 通知）を扱う appview の公開面。判断そのものはここに無く、"
+    "XRPC を MCP router へ中継する。"]))
+
+(defn- routes-section [routes note]
+  (dds/section
+   {:title "この面が答えるもの"}
+   (dds/table {:caption "公開ルート"
+               :headers ["METHOD" "PATH" "何をするか"]
+               :rows (route-rows routes)})
+   [:p {:class "ac-note"} note]))
+
+(defn- status-section [built-at]
+  (dds/section
+   {:title "現在地"}
+   [:p {:class "ac-lede"}
+    "この appview は TypeScript/Svelte から ClojureScript へ移行済み。"
+    "deploy される bundle は、いま読んでいるソースからコンパイルされたもの"
+    "である（docs/adr/0001）。"]
+   [:p {:class "ac-note"}
+    "呼び先のホストは移行時点でいずれも DNS を引けない。移行はそれを直さない。"]
+   (when built-at
+     [:p {:class "ac-note"} "bundle build: " built-at])))
+
 (defn body
   "opts:
    :routes    air-crew.route/routes（この Worker が実際に答えるもの）
@@ -47,22 +79,12 @@
    :built-at  bundle のビルド時刻（不明なら nil）"
   [{:keys [routes vars mcp-url built-at]}]
   (dds/container
-   (dds/section
-    {}
-    (dds/heading 1 "Air Crew Management")
-    [:p {:class "ac-lede"}
-     "航空機の乗務員運用（roster / pairing / 資格 / 疲労 / 割当 / 移動 / "
-     "勤務時間 / 通知）を扱う appview の公開面。判断そのものはここに無く、"
-     "XRPC を MCP router へ中継する。"])
+   (about-section)
 
-   (dds/section
-    {:title "この面が答えるもの"}
-    (dds/table {:caption "公開ルート"
-                :headers ["METHOD" "PATH" "何をするか"]
-                :rows (route-rows routes)})
-    [:p {:class "ac-note"}
-     "この表は Worker の route 表そのものから描いている。ページに焼いた値では"
-     "ないので、実際に答えるものと表示がずれない。"])
+   (routes-section
+    routes
+    (str "この表は Worker の route 表そのものから描いている。ページに焼いた値では"
+         "ないので、実際に答えるものと表示がずれない。"))
 
    (dds/section
     {:title "実行時の設定"}
@@ -79,24 +101,49 @@
      "中継先だけは値で出す。どこへ要求が出て行くかを読めなくすると、"
      "設定ミスが黙って通るからである。"])
 
+   (status-section built-at)))
+
+(defn static-body
+  "静的版（IPFS に content-addressed で置く版）の本文。opts は `:routes` だけを読む。
+
+  静的版には Worker が居ない。したがって `/health` も `/xrpc/:nsid` も
+  答えず、env も中継先も存在しない。**存在しないものを広告するページは、
+  route 表を焼いていた移行前のページと同じ欠陥を持つ**（docs/adr/0001）ので、
+  route 表は `:route/kind :page` に絞り、実行時の設定の節は出さない。
+  代わりに『これは静的版であり、中継は Worker 版にしか無い』と書く ——
+  黙って消すと、読み手は中継が壊れたのか元から無いのか区別できない。
+  `:built-at` は読まない —— 時刻が入れば同じ tree から同じ CID が出なくなる。"
+  [{:keys [routes]}]
+  (dds/container
+   (about-section)
+
+   (routes-section
+    (filterv #(= :page (:route/kind %)) routes)
+    (str "この表は Worker の route 表のうち、静的に配れるもの（ページ）だけを"
+         "描いている。"))
+
    (dds/section
-    {:title "現在地"}
+    {:title "この版について"}
     [:p {:class "ac-lede"}
-     "この appview は TypeScript/Svelte から ClojureScript へ移行済み。"
-     "deploy される bundle は、いま読んでいるソースからコンパイルされたもの"
-     "である（docs/adr/0001）。"]
+     "これは IPFS に置いた content-addressed な静的版である。"
+     "正準のアドレスは ipns:// の名前で、DNS 名はそこを指す別名にすぎない。"]
     [:p {:class "ac-note"}
-     "呼び先のホストは移行時点でいずれも DNS を引けない。移行はそれを直さない。"]
-    (when built-at
-      [:p {:class "ac-note"} "bundle build: " built-at]))))
+     "XRPC の中継は Worker 版にしか無い。この版は何も中継せず、"
+     "実行時の設定も持たない。"])
+
+   (status-section nil)))
 
 (defn render
-  "完全な HTML 文書。`css` は呼び出し側が渡す（ライブラリは I/O を持たない）。"
-  [{:keys [css] :as opts}]
+  "完全な HTML 文書。`css` は呼び出し側が渡す（ライブラリは I/O を持たない）。
+
+  `:static? true` で静的版（`static-body`）を描く。無ければ Worker 版で、
+  その出力は静的版を足す前と 1 バイトも変わらない —— Worker は並行して
+  deploy されたままなので、静的版のための変更が Worker の面を動かしてはならない。"
+  [{:keys [css static?] :as opts}]
   (page/->page
    {:title "Air Crew Management"
     :description "航空機の乗務員運用を扱う appview の公開面。XRPC を MCP router へ中継する。"
     :lang "ja"
     :css css
     :app-css (str tokens/bridge-css "\n" app-css)}
-   (body opts)))
+   (if static? (static-body opts) (body opts))))
